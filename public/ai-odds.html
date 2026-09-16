@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Odds Generator · SlipSmart</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body data-page="ai">
+  <main class="container py-4">
+    <div class="text-center mb-4">
+      <span class="ss-badge-soft"><i class="bi bi-stars"></i> AI Odds Engine</span>
+      <h3 class="fw-bold mt-2">Upload a screenshot. Get AI-generated odds.</h3>
+      <p class="text-secondary col-lg-6 mx-auto">Screenshot any fixture list or booking code screen — our AI reads every match and returns fair odds, best picks and a suggested combination slip.</p>
+    </div>
+
+    <div id="ai-config-banner" class="alert alert-warning d-none col-lg-8 mx-auto">
+      <i class="bi bi-exclamation-triangle"></i> <strong>AI not configured.</strong> Add <code>GEMINI_API_KEY</code> to the <code>.env</code> file and restart the server to enable generations.
+    </div>
+
+    <div id="login-prompt" class="text-center d-none col-lg-6 mx-auto">
+      <div class="card"><div class="card-body p-4">
+        <i class="bi bi-person-lock fs-1 text-secondary"></i>
+        <h6 class="fw-bold mt-2">Log in to generate odds</h6>
+        <p class="small text-secondary">You need an account and an AI credit to use the odds engine.</p>
+        <a href="/login.html?next=/ai-odds.html" class="btn btn-success">Log in</a>
+        <a href="/register.html?next=/ai-odds.html" class="btn btn-outline-light">Create account</a>
+      </div></div>
+    </div>
+
+    <div id="ai-app" class="d-none">
+      <div class="row g-4">
+        <div class="col-lg-5">
+          <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-stars text-success"></i> Your AI credits</span>
+              <span class="badge text-bg-success fs-6" id="credit-count">0</span>
+            </div>
+            <div class="card-body">
+              <p class="small text-secondary">One credit = one odds generation. Credits never expire.</p>
+              <div id="pack-list" class="d-grid gap-2"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header"><i class="bi bi-cloud-upload text-success"></i> Upload screenshot</div>
+            <div class="card-body">
+              <div id="dropzone" class="ss-dropzone mb-3">
+                <i class="bi bi-image fs-1 text-secondary"></i>
+                <p class="mb-1 mt-2">Click to choose or drag a screenshot here</p>
+                <p class="small text-secondary mb-0">PNG · JPG · WEBP · GIF — max 10 MB</p>
+                <input type="file" id="file-input" accept="image/*" class="d-none">
+              </div>
+              <div id="preview-wrap" class="d-none mb-3">
+                <img id="preview" class="img-fluid rounded border border-secondary" alt="Screenshot preview">
+              </div>
+              <button id="generate-btn" class="btn btn-success w-100" disabled>
+                <i class="bi bi-magic"></i> Generate odds <span id="cost-note" class="small">(1 credit)</span>
+              </button>
+              <p id="no-credits-note" class="small text-warning d-none mt-2 mb-0">
+                <i class="bi bi-exclamation-circle"></i> You're out of credits — buy a pack above to continue.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div id="result-area">
+            <div class="card"><div class="card-body text-center text-secondary p-5">
+              <i class="bi bi-magic fs-1"></i>
+              <p class="mb-0 mt-2">Your AI analysis will appear here.</p>
+            </div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header"><i class="bi bi-clock-history text-success"></i> Recent generations</div>
+        <div class="card-body" id="history-list"><p class="text-secondary small mb-0">None yet.</p></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://js.paystack.co/v1/inline.js"></script>
+  <script src="/js/app.js"></script>
+  <script src="/js/ai.js"></script>
+</body>
+</html>
