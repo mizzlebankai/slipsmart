@@ -10,7 +10,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   const errorBox = document.getElementById('admin-error');
   const slipsBox = document.getElementById('admin-slips');
   const ordersBox = document.getElementById('admin-orders');
+  const creditPriceInput = document.getElementById('ai-credit-price');
+  const creditPriceStatus = document.getElementById('credit-price-status');
   let slipsRequestId = 0;
+
+  async function loadCreditPrice() {
+    const { creditPriceGhs } = await SS.api('/api/payments/admin/credit-price');
+    creditPriceInput.value = Number(creditPriceGhs || 0).toFixed(2);
+    creditPriceStatus.textContent = `1 credit = ${SS.ghs(creditPriceGhs)}. Packs update automatically.`;
+  }
 
   async function loadSlips() {
     const requestId = ++slipsRequestId;
@@ -112,6 +120,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  document.getElementById('credit-price-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const value = Number(creditPriceInput.value);
+    if (!Number.isFinite(value) || value < 0) {
+      creditPriceStatus.textContent = 'Enter a valid non-negative GHS value.';
+      creditPriceStatus.classList.add('text-danger');
+      return;
+    }
+    creditPriceStatus.classList.remove('text-danger');
+    try {
+      const res = await SS.api('/api/payments/admin/credit-price', {
+        method: 'PUT',
+        body: { creditPriceGhs: value },
+      });
+      creditPriceInput.value = Number(res.creditPriceGhs || 0).toFixed(2);
+      creditPriceStatus.textContent = `Saved. 1 credit = ${SS.ghs(res.creditPriceGhs)} and all pack prices update immediately.`;
+      SS.toast('AI credit price updated!');
+      await loadCreditPrice();
+    } catch (err) {
+      creditPriceStatus.textContent = err.message;
+      creditPriceStatus.classList.add('text-danger');
+    }
+  });
+
   document.getElementById('clear-failed-orders').addEventListener('click', () =>
     clearOrders('failed', 'Delete all failed transactions? This cannot be undone.')
   );
@@ -119,5 +151,5 @@ document.addEventListener('DOMContentLoaded', async () => {
     clearOrders('all', 'Delete every transaction record, including completed payments? This cannot be undone. Credits already granted will not be reversed.')
   );
 
-  await Promise.all([loadSlips(), loadOrders()]);
+  await Promise.all([loadSlips(), loadOrders(), loadCreditPrice()]);
 });

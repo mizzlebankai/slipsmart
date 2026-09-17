@@ -55,6 +55,12 @@ db.exec(`
     receipt_sent_at INTEGER
   );
 
+  CREATE TABLE IF NOT EXISTS settings (
+    key         TEXT PRIMARY KEY,
+    value       TEXT NOT NULL,
+    updated_at  INTEGER NOT NULL DEFAULT 0
+  );
+
   CREATE TABLE IF NOT EXISTS ai_generations (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id     INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -70,6 +76,12 @@ try { db.exec('ALTER TABLE users ADD COLUMN firebase_uid TEXT'); } catch (err) {
 db.exec('CREATE UNIQUE INDEX IF NOT EXISTS users_firebase_uid_idx ON users (firebase_uid) WHERE firebase_uid IS NOT NULL');
 try { db.exec('ALTER TABLE purchases ADD COLUMN receipt_sent_at INTEGER'); } catch (err) {
   if (!String(err.message).includes('duplicate column name')) throw err;
+}
+
+const defaultAiCreditPrice = String(process.env.AI_CREDIT_PRICE_GHS || 15);
+const existingSetting = db.prepare('SELECT value FROM settings WHERE key = ?').get('ai_credit_price_ghs');
+if (!existingSetting) {
+  db.prepare('INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)').run('ai_credit_price_ghs', defaultAiCreditPrice, Date.now());
 }
 
 module.exports = db;

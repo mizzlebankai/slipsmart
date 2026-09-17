@@ -15,7 +15,7 @@ const firebase = require('./src/services/firebase');
 const email = require('./src/services/email');
 const openai = require('./src/services/openai');
 
-const { CREDIT_PACKS, fulfillPurchase } = paymentsRoutes;
+const { fulfillPurchase, getCreditPacks } = paymentsRoutes;
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -59,7 +59,7 @@ app.get('/api/config', (req, res) => {
     aiConfigured: gemini.isConfigured(),
     firebaseConfigured: firebase.isConfigured(),
     firebaseConfig: firebase.clientConfig(),
-    creditPacks: CREDIT_PACKS,
+    creditPacks: getCreditPacks(),
   });
 });
 

@@ -6,18 +6,30 @@ const email = require('../services/email');
 
 const router = express.Router();
 
-const CREDIT_PACKS = [
-  { id: 'pack1', credits: 1, priceGhs: 15, label: '1 AI generation' },
-  { id: 'pack5', credits: 5, priceGhs: 60, label: '5 AI generations' },
-  { id: 'pack10', credits: 10, priceGhs: 100, label: '10 AI generations' },
-];
+const DEFAULT_AI_CREDIT_PRICE_GHS = Number(process.env.AI_CREDIT_PRICE_GHS || 15);
+
+function getCreditPriceGhs() {
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('ai_credit_price_ghs');
+  const raw = row ? row.value : process.env.AI_CREDIT_PRICE_GHS;
+  const price = Number(raw ?? DEFAULT_AI_CREDIT_PRICE_GHS);
+  return Number.isFinite(price) && price >= 0 ? price : DEFAULT_AI_CREDIT_PRICE_GHS;
+}
+
+function getCreditPacks() {
+  const base = getCreditPriceGhs();
+  return [
+    { id: 'pack1', credits: 1, priceGhs: Number(base.toFixed(2)), label: '1 AI generation' },
+    { id: 'pack5', credits: 5, priceGhs: Number((base * 5).toFixed(2)), label: '5 AI generations' },
+    { id: 'pack10', credits: 10, priceGhs: Number((base * 10).toFixed(2)), label: '10 AI generations' },
+  ];
+}
 
 function demoPaymentsEnabled() {
   return !paystack.isConfigured() && process.env.NODE_ENV !== 'production';
 }
 
 function getPack(packId) {
-  return CREDIT_PACKS.find((p) => p.id === packId);
+  return getCreditPacks().find((p) => p.id === packId);
 }
 
 function fulfillPurchase(purchase) {
@@ -124,7 +136,25 @@ router.post('/demo-pay', requireAuth, (req, res) => {
 });
 
 router.get('/packs', (req, res) => {
-  res.json({ packs: CREDIT_PACKS, currency: 'GHS' });
+  res.json({ packs: getCreditPacks(), currency: 'GHS' });
+});
+
+router.get('/admin/credit-price', requireAdmin, (req, res) => {
+  res.json({ creditPriceGhs: getCreditPriceGhs() });
+});
+
+router.put('/admin/credit-price', requireAdmin, (req, res) => {
+  const nextValue = Number(req.body?.creditPriceGhs);
+  if (!Number.isFinite(nextValue) || nextValue < 0) {
+    return res.status(400).json({ error: 'Credit price must be a valid non-negative number.' });
+  }
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('ai_credit_price_ghs');
+  if (row) {
+    db.prepare('UPDATE settings SET value = ?, updated_at = ? WHERE key = ?').run(String(nextValue), Date.now(), 'ai_credit_price_ghs');
+  } else {
+    db.prepare('INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)').run('ai_credit_price_ghs', String(nextValue), Date.now());
+  }
+  res.json({ creditPriceGhs: getCreditPriceGhs(), packs: getCreditPacks() });
 });
 
 router.get('/mine', requireAuth, (req, res) => {
@@ -170,6 +200,19 @@ function publicPurchase(p) {
   };
 }
 
-router.CREDIT_PACKS = CREDIT_PACKS;
+router.CREDIT_PACKS = getCreditPacks;
+router.getCreditPacks = getCreditPacks;
+router.getCreditPriceGhs = getCreditPriceGhs;
+router.setCreditPriceGhs = (value) => {
+  const nextValue = Number(value);
+  if (!Number.isFinite(nextValue) || nextValue < 0) return null;
+  const row = db.prepare('SELECT value FROM settings WHERE key = ?').get('ai_credit_price_ghs');
+  if (row) {
+    db.prepare('UPDATE settings SET value = ?, updated_at = ? WHERE key = ?').run(String(nextValue), Date.now(), 'ai_credit_price_ghs');
+  } else {
+    db.prepare('INSERT INTO settings (key, value, updated_at) VALUES (?, ?, ?)').run('ai_credit_price_ghs', String(nextValue), Date.now());
+  }
+  return getCreditPriceGhs();
+};
 router.fulfillPurchase = fulfillPurchase;
 module.exports = router;
