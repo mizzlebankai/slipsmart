@@ -30,10 +30,9 @@
 
 body {
   background:
-    radial-gradient(900px 500px at 100% -10%, rgba(84, 216, 255, 0.12), transparent 62%),
-    radial-gradient(700px 420px at -10% 35%, rgba(57, 229, 140, 0.08), transparent 65%),
+    radial-gradient(900px 500px at 100% -10%, rgba(84, 216, 255, 0.10), transparent 62%),
+    radial-gradient(700px 420px at -10% 35%, rgba(57, 229, 140, 0.07), transparent 65%),
     linear-gradient(var(--ss-wallpaper-overlay), var(--ss-wallpaper-overlay)),
-    url('/assets/background-1.jpg') center / cover fixed,
     var(--ss-bg);
   color: var(--ss-text);
   font-family: 'Trebuchet MS', 'Segoe UI', sans-serif;
@@ -49,12 +48,11 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: 0.16;
+  opacity: 0.08;
   background-image:
-    linear-gradient(rgba(84, 216, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(84, 216, 255, 0.045) 1px, transparent 1px);
-  background-size: 56px 56px;
-  mask-image: linear-gradient(to bottom, black, transparent 82%);
+    linear-gradient(rgba(84, 216, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(84, 216, 255, 0.04) 1px, transparent 1px);
+  background-size: 52px 52px;
   z-index: -1;
 }
 
@@ -64,14 +62,7 @@ body::after {
   inset: 0;
   pointer-events: none;
   background: linear-gradient(110deg, transparent 0%, var(--ss-wallpaper-wash) 48%, transparent 100%);
-  background-size: 180% 100%;
-  animation: ss-wallpaper-shift 18s ease-in-out infinite alternate;
   z-index: -1;
-}
-
-@keyframes ss-wallpaper-shift {
-  from { background-position: 0% 50%; }
-  to { background-position: 100% 50%; }
 }
 
 body > .container,
@@ -81,7 +72,6 @@ body > main {
 
 .ss-nav {
   background: rgba(8, 13, 22, 0.9);
-  backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--ss-border);
 }
 
@@ -118,8 +108,7 @@ body > main {
   background: var(--ss-surface);
   border: 1px solid var(--ss-border);
   border-radius: 10px;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.16);
-  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.12);
 }
 
 .auth-page {
@@ -130,7 +119,7 @@ body > main {
 
 .auth-page main { display: grid; place-items: center; padding-top: 3rem !important; padding-bottom: 3rem !important; }
 .auth-page main > .col-md-5 { animation: ss-auth-rise 0.7s ease both; }
-.auth-page main > .col-md-5 > .card { background: color-mix(in srgb, var(--ss-surface) 78%, transparent); backdrop-filter: blur(20px); }
+.auth-page main > .col-md-5 > .card { background: rgba(16, 26, 42, 0.7); }
 
 @keyframes ss-auth-rise {
   from { opacity: 0; transform: translateY(18px); }

@@ -10,9 +10,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const errorBox = document.getElementById('admin-error');
   const slipsBox = document.getElementById('admin-slips');
   const ordersBox = document.getElementById('admin-orders');
+  let slipsRequestId = 0;
 
   async function loadSlips() {
-    const { slips } = await SS.api('/api/slips');
+    const requestId = ++slipsRequestId;
+    const { slips = [] } = await SS.api('/api/slips');
+    if (requestId !== slipsRequestId) return;
+
     slipsBox.innerHTML = slips.length
       ? slips.map((s) => `
         <div class="d-flex justify-content-between align-items-center border-bottom border-secondary py-2">
@@ -32,7 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     slipsBox.querySelectorAll('[data-toggle]').forEach((btn) =>
       btn.addEventListener('click', async () => {
         await SS.api('/api/slips/' + btn.dataset.toggle, { method: 'PUT', body: { isActive: btn.textContent.trim() === 'Activate' } });
-        loadSlips();
+        await loadSlips();
       })
     );
     slipsBox.querySelectorAll('[data-delete]').forEach((btn) =>
@@ -99,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
       SS.toast('Slip published!');
       e.target.reset();
-      loadSlips();
+      await loadSlips();
     } catch (err) {
       errorBox.textContent = err.message;
       errorBox.classList.remove('d-none');
